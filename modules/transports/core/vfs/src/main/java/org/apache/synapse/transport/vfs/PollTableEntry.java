@@ -550,6 +550,12 @@ public class PollTableEntry extends AbstractPollTableEntry {
 
             requiredFileNamePatterns = ParamUtils.getOptionalParam(params,VFSConstants.TRANSPORT_FILE_REQUIRED_FILE_NAME_PATTERNS);
 
+            String strMultiFileReadSameTransaction = ParamUtils.getOptionalParam(params, VFSConstants.TRANSPORT_FILE_MULTIFILEREAD_SAME_TRANSACTION);
+            multiFileReadSameTransaction = false;
+            if (strMultiFileReadSameTransaction != null && "true".equals(strMultiFileReadSameTransaction.toLowerCase())) {
+            	multiFileReadSameTransaction = true;
+            }  
+
             contentType = ParamUtils.getRequiredParam(params,
                                                       VFSConstants.TRANSPORT_FILE_CONTENT_TYPE);
 
