@@ -45,6 +45,7 @@ public final class VFSConstants {
     public static final String UPDATE_LAST_MODIFIED = "transport.vfs.UpdateLastModified";
     public static final String TRANSPORT_FILE_LOCKING_ENABLED = "enable";
     public static final String TRANSPORT_FILE_LOCKING_DISABLED = "disable";
+    public static final String TRANSPORT_TEMP_FILE = "transport.vfs.TempFile";
 
     /**
      * This parameter is used decide whether the resolving hostname IP of URIs are done at deployment or dynamically.

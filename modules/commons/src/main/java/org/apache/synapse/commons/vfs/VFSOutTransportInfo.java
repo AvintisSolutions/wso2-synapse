@@ -49,6 +49,7 @@ public class VFSOutTransportInfo implements OutTransportInfo {
     private long reconnectTimeout = 30000;
     private boolean append;
     private boolean fileLocking;
+    private boolean useTempFile;
     private Map<String, String> fso = null;
     private boolean sendFileSynchronously = false;
     //When the folder structure does not exists forcefully create
@@ -140,6 +141,13 @@ public class VFSOutTransportInfo implements OutTransportInfo {
             sendFileSynchronously = Boolean.parseBoolean(strSendLocking);
         } else {
             sendFileSynchronously = false;
+        }
+        
+        if (properties.containsKey(VFSConstants.TRANSPORT_TEMP_FILE)) {
+            String strUseTempFile= properties.get(VFSConstants.TRANSPORT_TEMP_FILE);
+            useTempFile = Boolean.parseBoolean(strUseTempFile);
+        } else {
+            useTempFile = true;
         }
 
         if (properties.containsKey(VFSConstants.APPEND)) {
@@ -253,6 +261,10 @@ public class VFSOutTransportInfo implements OutTransportInfo {
 
     public boolean isFileLockingEnabled() {
         return fileLocking;
+    }
+    
+    public boolean isUsingTempFile(){
+        return useTempFile;
     }
 
     public Map<String, String> getOutFileSystemOptionsMap() {

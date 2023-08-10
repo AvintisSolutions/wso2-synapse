@@ -47,6 +47,7 @@ import org.apache.synapse.commons.vfs.VFSParamDTO;
 import org.apache.synapse.commons.vfs.VFSUtils;
 
 import java.io.IOException;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -107,7 +108,7 @@ public class VFSTransportSender extends AbstractTransportSender implements Manag
                     globalFileLockingFlag = false;
                 }
             }
-
+            
             Parameter strAutoLock = transportOut.getParameter(VFSConstants.TRANSPORT_AUTO_LOCK_RELEASE);
             boolean autoLockRelease = false;
             boolean autoLockReleaseSameNode = true;
@@ -227,7 +228,8 @@ public class VFSTransportSender extends AbstractTransportSender implements Manag
                 long reconnectionTimeout = vfsOutInfo.getReconnectTimeout();
                 boolean append = vfsOutInfo.isAppend();
                 boolean updateLastModified = vfsOutInfo.isUpdateLastModified();
-                
+                boolean useTempFile =  vfsOutInfo.isUsingTempFile();
+                System.out.println("useTempFile "+useTempFile);
                 while (wasError) {
                     
                     try {
@@ -284,8 +286,14 @@ public class VFSTransportSender extends AbstractTransportSender implements Manag
                 if (replyFile.exists()) {
                     if (replyFile.getType() == FileType.FOLDER) {
                         // we need to write a file containing the message to this folder
-                        FileObject responseFile = getFsManager().resolveFile(replyFile,
-                                VFSUtils.getFileName(msgCtx, vfsOutInfo));
+                        
+                        FileObject responseFile;
+                        if(vfsOutInfo.isUsingTempFile()){
+                            UUID uuid = java.util.UUID.randomUUID();
+                            responseFile = getFsManager().resolveFile(replyFile, uuid.toString());
+                        }else{
+                            responseFile = getFsManager().resolveFile(replyFile, VFSUtils.getFileName(msgCtx, vfsOutInfo));
+                        }
 
                         // if file locking is not disabled acquire the lock
                         // before uploading the file
@@ -296,31 +304,52 @@ public class VFSTransportSender extends AbstractTransportSender implements Manag
                         } else {
                             populateResponseFile(responseFile, msgCtx,append, false, updateLastModified, fso);
                         }
-
+                        
+                        if(vfsOutInfo.isUsingTempFile()){
+                            responseFile.moveTo(getFsManager().resolveFile(replyFile, VFSUtils.getFileName(msgCtx, vfsOutInfo)));
+                        }
                     } else if (replyFile.getType() == FileType.FILE) {
-
+                        FileObject responseFile = replyFile;
+                        if(vfsOutInfo.isUsingTempFile()){
+                            UUID uuid = java.util.UUID.randomUUID();
+                            responseFile = replyFile.getParent().resolveFile(uuid.toString());
+                        }
+                        
                         // if file locking is not disabled acquire the lock
                         // before uploading the file
                         if (vfsOutInfo.isFileLockingEnabled()) {
-                            acquireLockForSending(replyFile, vfsOutInfo, fso);
-                            populateResponseFile(replyFile, msgCtx, append, true, updateLastModified, fso);
-                            VFSUtils.releaseLock(getFsManager(), replyFile, fso);
+                            acquireLockForSending(responseFile, vfsOutInfo, fso);
+                            populateResponseFile(responseFile, msgCtx, append, true, updateLastModified, fso);
+                            VFSUtils.releaseLock(getFsManager(), responseFile, fso);
                         } else {
-                            populateResponseFile(replyFile, msgCtx, append, false, updateLastModified, fso);
+                            populateResponseFile(responseFile, msgCtx, append, false, updateLastModified, fso);
                         }
 
+                        if(vfsOutInfo.isUsingTempFile()){
+                            responseFile.moveTo(replyFile);
+                        }
                     } else {
                         handleException("Unsupported reply file type : " + replyFile.getType() +
                                 " for file : " + VFSUtils.maskURLPassword(vfsOutInfo.getOutFileURI()));
                     }
                 } else {
+                    FileObject responseFile = replyFile;
+                    if(vfsOutInfo.isUsingTempFile()){
+                        UUID uuid = java.util.UUID.randomUUID();
+                        responseFile = replyFile.getParent().resolveFile(uuid.toString());
+                    }
+                    
                     // if file locking is not disabled acquire the lock before uploading the file
                     if (vfsOutInfo.isFileLockingEnabled()) {
-                        acquireLockForSending(replyFile, vfsOutInfo, fso);
-                        populateResponseFile(replyFile, msgCtx, append, true, updateLastModified, fso);
-                        VFSUtils.releaseLock(getFsManager(), replyFile, fso);
+                        acquireLockForSending(responseFile, vfsOutInfo, fso);
+                        populateResponseFile(responseFile, msgCtx, append, true, updateLastModified, fso);
+                        VFSUtils.releaseLock(getFsManager(), responseFile, fso);
                     } else {
-                        populateResponseFile(replyFile, msgCtx, append, false, updateLastModified, fso);
+                        populateResponseFile(responseFile, msgCtx, append, false, updateLastModified, fso);
+                    }
+                    
+                    if(vfsOutInfo.isUsingTempFile()){
+                        responseFile.moveTo(replyFile);
                     }
                 }
             } catch (FileSystemException e) {
