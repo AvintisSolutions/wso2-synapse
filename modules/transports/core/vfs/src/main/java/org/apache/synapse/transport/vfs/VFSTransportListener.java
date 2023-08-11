@@ -472,7 +472,8 @@ public class VFSTransportListener extends AbstractPollingTransportListener<PollT
                             //Check if RequiredFileNamePatterns is specified
                             if(entry.hasRequiredFileNamePatterns()){
                                 //Commit a complete list of children
-                                List<String> requiredPatternReplacedList = VFSUtils.buildPatternReplaced(child, entry.getFileNamePattern(), entry.getRequiredFileNamePatterns());
+                                String childBaseName = child.getName().getBaseName();
+                                List<String> requiredPatternReplacedList = VFSUtils.buildPatternReplaced(childBaseName, entry.getFileNamePattern(), entry.getRequiredFileNamePatterns());
                                 boolean hasPatternMissing = VFSUtils.hasRequiredPatternsMissing(requiredPatternReplacedList, children);
                                 if(hasPatternMissing) {
                                     //Do not consume this file

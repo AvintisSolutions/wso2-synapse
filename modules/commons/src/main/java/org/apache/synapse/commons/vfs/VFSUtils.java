@@ -827,7 +827,7 @@ public class VFSUtils {
      * @param requiredFileNamePatterns patterns that has to be updated by replacing variable parts with actual values based on the given fileBaseName
      * @return list of reqiredFileNamePattern containing real values instead of variable parts
      */
-    protected static List<String> buildPatternReplaced(String fileBaseName, String fileNamePattern, String requiredFileNamePatterns) {
+    public static List<String> buildPatternReplaced(String fileBaseName, String fileNamePattern, String requiredFileNamePatterns) {
     	List<String> result = new ArrayList<String>();
     	if(requiredFileNamePatterns != null && !requiredFileNamePatterns.isEmpty()){
 	    	//run the fileNamePattern to the child Filename to find out the regex groups needed
