@@ -57,6 +57,10 @@ public class PollTableEntry extends AbstractPollTableEntry {
     private String replyFileURI;
     /** file name pattern for a directory or compressed file entry */
     private String fileNamePattern;
+    /** File name patterns and order of processing the matching files */
+    private String requiredFileNamePatterns;
+    /** Extension: If transaction has to be the same for all files */
+    private boolean multiFileReadSameTransaction;
     /** Content-Type to use for the message */
     private String contentType;
 
@@ -187,6 +191,14 @@ public class PollTableEntry extends AbstractPollTableEntry {
 
     public String getFileNamePattern() {
         return fileNamePattern;
+    }
+
+    public String getRequiredFileNamePatterns() {
+        return requiredFileNamePatterns;
+    }
+    
+    public boolean hasRequiredFileNamePatterns() {
+        return requiredFileNamePatterns != null && !requiredFileNamePatterns.isEmpty();
     }
 
     public String getContentType() {
@@ -355,6 +367,10 @@ public class PollTableEntry extends AbstractPollTableEntry {
 
     public double getFileSizeLimit() {
         return fileSizeLimit;
+    }
+
+    public boolean isMultiFileReadSameTransactionEnabled() {
+        return multiFileReadSameTransaction;
     }
 
     public long getReconnectTimeout() {
@@ -578,6 +594,14 @@ public class PollTableEntry extends AbstractPollTableEntry {
 
             fileNamePattern = ParamUtils.getOptionalParam(params,
                                                           VFSConstants.TRANSPORT_FILE_FILE_NAME_PATTERN);
+
+            requiredFileNamePatterns = ParamUtils.getOptionalParam(params,VFSConstants.TRANSPORT_FILE_REQUIRED_FILE_NAME_PATTERNS);
+
+            String strMultiFileReadSameTransaction = ParamUtils.getOptionalParam(params, VFSConstants.TRANSPORT_FILE_MULTIFILEREAD_SAME_TRANSACTION);
+            multiFileReadSameTransaction = false;
+            if (strMultiFileReadSameTransaction != null && "true".equals(strMultiFileReadSameTransaction.toLowerCase())) {
+            	multiFileReadSameTransaction = true;
+            }  
 
             contentType = ParamUtils.getRequiredParam(params,
                                                       VFSConstants.TRANSPORT_FILE_CONTENT_TYPE);
