@@ -316,7 +316,7 @@ public class VFSTransportListener extends AbstractPollingTransportListener<PollT
                                 acquireLock(getFsManager(), fileObject, entry, fso, true))) {
                             try {
                                 if (fileObject.getType() == FileType.FILE) {
-                                    boolean status = processFile(entry, fileObject);
+                                    boolean status = processFile(entry, fileObject, null);
                                     if (status) {
                                         entry.setLastPollState(PollTableEntry.SUCCSESSFUL);
                                     } else {
@@ -522,7 +522,7 @@ public class VFSTransportListener extends AbstractPollingTransportListener<PollT
                                     processCount++;
 
                                     if (child.getType() == FileType.FILE) {
-                                        boolean status = processFile(entry, child);
+                                        boolean status = processFile(entry, child, transactionId);
                                         if (status) {
                                             successCount++;
                                             entry.setLastPollState(PollTableEntry.SUCCSESSFUL);
@@ -827,10 +827,11 @@ public class VFSTransportListener extends AbstractPollingTransportListener<PollT
      * Process a single file through Axis2
      * @param entry the PollTableEntry for the file (or its parent directory or archive)
      * @param file the file that contains the actual message pumped into Axis2
+     * @param transactionId custom transactionId, or <code>null</code> to use the default transactionId
      * @return boolean the status of the operation
      * @throws AxisFault on error
      */
-    protected boolean processFile(PollTableEntry entry, FileObject file) throws AxisFault {
+    protected boolean processFile(PollTableEntry entry, FileObject file, String transactionId) throws AxisFault {
         boolean processFileStatus = true;
         try {
             FileContent content = file.getContent();
@@ -853,6 +854,10 @@ public class VFSTransportListener extends AbstractPollingTransportListener<PollT
             }
 
             MessageContext msgContext = entry.createMessageContext();
+
+            if(transactionId != null) {
+            	transportHeaders.put("frameworkTransactionId", transactionId);
+            }
 
             String contentType = entry.getContentType();
             if (BaseUtils.isBlank(contentType)) {
