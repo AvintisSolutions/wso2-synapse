@@ -229,7 +229,6 @@ public class VFSTransportSender extends AbstractTransportSender implements Manag
                 boolean append = vfsOutInfo.isAppend();
                 boolean updateLastModified = vfsOutInfo.isUpdateLastModified();
                 boolean useTempFile =  vfsOutInfo.isUsingTempFile();
-                System.out.println("useTempFile "+useTempFile);
                 while (wasError) {
                     
                     try {
