@@ -147,7 +147,7 @@ public class VFSOutTransportInfo implements OutTransportInfo {
             String strUseTempFile= properties.get(VFSConstants.TRANSPORT_TEMP_FILE);
             useTempFile = Boolean.parseBoolean(strUseTempFile);
         } else {
-            useTempFile = true;
+            useTempFile = false;
         }
 
         if (properties.containsKey(VFSConstants.APPEND)) {
