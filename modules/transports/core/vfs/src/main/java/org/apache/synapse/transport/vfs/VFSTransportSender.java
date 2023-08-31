@@ -288,8 +288,13 @@ public class VFSTransportSender extends AbstractTransportSender implements Manag
                         
                         FileObject responseFile;
                         if(vfsOutInfo.isUsingTempFile()){
-                            UUID uuid = java.util.UUID.randomUUID();
-                            responseFile = getFsManager().resolveFile(replyFile, uuid.toString());
+                            String fileName = VFSUtils.getFileName(msgCtx, vfsOutInfo);
+                            int i = fileName.lastIndexOf(".");
+                            if(i != -1)
+                                fileName = fileName.substring(0, i)+".tmp";
+                            else
+                                fileName += ".tmp";
+                            responseFile = getFsManager().resolveFile(replyFile, fileName);
                         }else{
                             responseFile = getFsManager().resolveFile(replyFile, VFSUtils.getFileName(msgCtx, vfsOutInfo));
                         }
@@ -297,7 +302,7 @@ public class VFSTransportSender extends AbstractTransportSender implements Manag
                         // if file locking is not disabled acquire the lock
                         // before uploading the file
                         if (vfsOutInfo.isFileLockingEnabled()) {
-                            acquireLockForSending(responseFile, vfsOutInfo, fso);
+                            //acquireLockForSending(responseFile, vfsOutInfo, fso); //Not necessary anymore, since we use the tmp extension
                             populateResponseFile(responseFile, msgCtx,append, true, updateLastModified, fso);
                             VFSUtils.releaseLock(getFsManager(), responseFile, fso);
                         } else {
@@ -310,14 +315,19 @@ public class VFSTransportSender extends AbstractTransportSender implements Manag
                     } else if (replyFile.getType() == FileType.FILE) {
                         FileObject responseFile = replyFile;
                         if(vfsOutInfo.isUsingTempFile()){
-                            UUID uuid = java.util.UUID.randomUUID();
-                            responseFile = replyFile.getParent().resolveFile(uuid.toString());
+                            String fileName = VFSUtils.getFileName(msgCtx, vfsOutInfo);
+                            int i = fileName.lastIndexOf(".");
+                            if(i != -1)
+                                fileName = fileName.substring(0, i)+".tmp";
+                            else
+                                fileName += ".tmp";
+                            responseFile = replyFile.getParent().resolveFile(fileName);
                         }
                         
                         // if file locking is not disabled acquire the lock
                         // before uploading the file
                         if (vfsOutInfo.isFileLockingEnabled()) {
-                            acquireLockForSending(responseFile, vfsOutInfo, fso);
+                            //acquireLockForSending(responseFile, vfsOutInfo, fso); //Not necessary anymore, since we use the tmp extension
                             populateResponseFile(responseFile, msgCtx, append, true, updateLastModified, fso);
                             VFSUtils.releaseLock(getFsManager(), responseFile, fso);
                         } else {
